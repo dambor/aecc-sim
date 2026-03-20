@@ -26,8 +26,9 @@ const ChatBot = () => {
         setMessages(prev => [...prev, { text: userMsg, isAi: false }]);
         setInputValue("");
         setIsLoading(true);
-
-        const apiKey = 'sk-t0jRd6a0o8IxC2LoYk1voZ6eDB749HgLonRPB5UF8mQ';
+        
+        // Use environment variable to secure the API key
+        const apiKey = import.meta.env.VITE_LANGFLOW_API_KEY;
         const payload = {
             "output_type": "chat",
             "input_type": "chat",
