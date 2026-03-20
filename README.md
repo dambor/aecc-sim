@@ -1,61 +1,90 @@
+# AECC Tactical Simulator 🛡️
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+A high-performance tactical dashboard for real-time edge node telemetry and AI-driven situational intelligence.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🏗️ System Architecture
 
-### `npm test`
+The following diagram illustrates the flow of tactical data from edge collection to intelligence synthesis.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```mermaid
+graph TD
+    subgraph "Edge Layer (Remote)"
+        E1[Edge Node: PAT-001]
+        E2[Edge Node: PAT-002]
+        E3[Edge Node: EOB-001]
+    end
 
-### `npm run build`
+    subgraph "Central Command (Vite/React)"
+        CS[Central Simulator UI]
+        TA[Tactical Advisor Agent]
+    end
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    subgraph "Intelligence Engine (Langflow)"
+        LF[Langflow 1.0 Server]
+        ADB[(AstraDB: Event Logs)]
+    end
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    %% Data Flow
+    E1 & E2 & E3 -- "Telemetry Stream" --> CS
+    CS -- "State Data" --> TA
+    TA -- "REST API (X-API-Key)" --> LF
+    LF -- "Vector Search" --> ADB
+    LF -- "Tactical Analysis" --> TA
+    TA -- "Formatted Report" --> CS
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔄 Network Flow
 
-### `npm run eject`
+Detailed interaction between the simulator's core subsystems:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```mermaid
+sequenceDiagram
+    participant Edge as Edge Nodes
+    participant Central as Central Simulator (React)
+    participant Agent as Tactical Advisor (ChatBot.jsx)
+    participant Intel as Intelligence Engine (Langflow)
+    participant DB as AstraDB
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    Edge->>Central: Real-time Telemetry (UDP/Socket)
+    Central->>Central: Update Global Tactical Map
+    
+    rect rgb(15, 23, 42)
+        Note over Agent, Intel: Tactical Query Path
+        Agent->>Intel: POST /api/v1/run (Payload + API Key)
+        Intel->>DB: Query Historical Context & RAG
+        DB-->>Intel: Return Tactical Logs
+        Intel->>Intel: Analyze Anomalies & Risks
+        Intel-->>Agent: JSON Response (Tactical Intel)
+    end
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    Agent->>Central: Render Formatted Report (Markdown)
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🚀 Key Components
 
-## Learn More
+### 1. Central Simulator (`App.jsx`)
+The hub of the operation. It aggregates real-time metrics, manages node states, and renders the situational map. It provides the "Ground Truth" for all tactical decisions.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 2. Tactical Advisor (`ChatBot.jsx`)
+A custom-built, premium React component using a 'frosted glass' tactical UI. Features:
+- **Persistent Sessions**: Uses `crypto.randomUUID()` for backend context.
+- **Rich Formatting**: Custom Markdown renderer for bullet points and bold tactical data.
+- **Dynamic Layout**: Toggle between a compact popup and a full-screen HUD view.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 3. Intelligence Engine (Langflow)
+The "Brain" of the system. It processes complex queries using RAG (Retrieval-Augmented Generation) against live telemetry and historical event logs in AstraDB.
 
-### Code Splitting
+### 4. AstraDB Persistence
+Stores all tactical events and anomaly logs. It enables the AI to "remember" previous failures and trends, providing the critical historical context required for accurate risk detection.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## ⚙️ Getting Started
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1.  **Start the Simulator**:
+    ```bash
+    npm install
+    npm run dev
+    ```
+2.  **Start Langflow**:
+    Ensure your Langflow server is running at `http://localhost:7860` with the provided flow ID: `604fddf2-a7af-44f9-a8ef-ee5052ff89b7`.
+3.  **API Configuration**:
+    The system uses the `sk-t0jR...` tactical key for secure server-to-server communication.
