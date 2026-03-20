@@ -7,30 +7,32 @@ A high-performance tactical dashboard for real-time edge node telemetry and AI-d
 The following diagram illustrates the flow of tactical data from edge collection to intelligence synthesis.
 
 ```mermaid
-graph TD
-    subgraph "Edge Layer (Remote)"
-        E1[Edge Node: PAT-001]
-        E2[Edge Node: PAT-002]
-        E3[Edge Node: EOB-001]
+graph LR
+    subgraph "Edge Collection"
+        E1[PAT-001]
+        E2[PAT-002]
+        E3[EOB-001]
     end
 
-    subgraph "Central Command (Vite/React)"
-        CS[Central Simulator UI]
+    subgraph "Main Simulator"
+        CS[Central Command UI]
+    end
+
+    subgraph "Intelligence Layer"
         TA[Tactical Advisor Agent]
-    end
-
-    subgraph "Intelligence Engine (Langflow)"
-        LF[Langflow 1.0 Server]
-        ADB[(AstraDB: Event Logs)]
+        LF[Langflow Engine]
+        ADB[(AstraDB: Logs)]
     end
 
     %% Data Flow
     E1 & E2 & E3 -- "Telemetry Stream" --> CS
+    
+    %% Intelligence Flow
     CS -- "State Data" --> TA
-    TA -- "REST API (X-API-Key)" --> LF
-    LF -- "Vector Search" --> ADB
-    LF -- "Tactical Analysis" --> TA
-    TA -- "Formatted Report" --> CS
+    TA -- "REST API" --> LF
+    LF -- "Historical Query" --> ADB
+    LF -- "Analysis" --> TA
+    TA -- "Reports" --> CS
 ```
 
 ## 🔄 Network Flow
@@ -49,9 +51,9 @@ sequenceDiagram
     Central->>Central: Update Global Tactical Map
     
     rect rgb(15, 23, 42)
-        Note over Agent, Intel: Tactical Query Path
+        Note over Agent, Intel: Intelligence Query Path
         Agent->>Intel: POST /api/v1/run (Payload + API Key)
-        Intel->>DB: Query Historical Context & RAG
+        Intel->>DB: Query Historical Context
         DB-->>Intel: Return Tactical Logs
         Intel->>Intel: Analyze Anomalies & Risks
         Intel-->>Agent: JSON Response (Tactical Intel)
@@ -72,7 +74,7 @@ A custom-built, premium React component using a 'frosted glass' tactical UI. Fea
 - **Dynamic Layout**: Toggle between a compact popup and a full-screen HUD view.
 
 ### 3. Intelligence Engine (Langflow)
-The "Brain" of the system. It processes complex queries using RAG (Retrieval-Augmented Generation) against live telemetry and historical event logs in AstraDB.
+The "Intelligence Layer" of the system. It processes complex queries by cross-referencing live telemetry with historical event logs in AstraDB.
 
 ### 4. AstraDB Persistence
 Stores all tactical events and anomaly logs. It enables the AI to "remember" previous failures and trends, providing the critical historical context required for accurate risk detection.
