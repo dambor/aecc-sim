@@ -16,21 +16,22 @@ graph LR
 
     subgraph "Main Simulator"
         CS[Central Command UI]
+        ADB[(AstraDB: Logs)]
     end
 
     subgraph "Intelligence Layer"
         TA[Tactical Advisor Agent]
         LF[Langflow Engine]
-        ADB[(AstraDB: Logs)]
     end
 
     %% Data Flow
     E1 & E2 & E3 -- "Telemetry Stream" --> CS
+    CS -- "Tactical Persistence" --> ADB
     
     %% Intelligence Flow
     CS -- "State Data" --> TA
     TA -- "REST API" --> LF
-    LF -- "Historical Query" --> ADB
+    LF -- "Context Query" --> ADB
     LF -- "Analysis" --> TA
     TA -- "Reports" --> CS
 ```
@@ -43,12 +44,13 @@ Detailed interaction between the simulator's core subsystems:
 sequenceDiagram
     participant Edge as Edge Nodes
     participant Central as Central Simulator (React)
+    participant DB as AstraDB
     participant Agent as Tactical Advisor (ChatBot.jsx)
     participant Intel as Intelligence Engine (Langflow)
-    participant DB as AstraDB
 
     Edge->>Central: Real-time Telemetry (UDP/Socket)
     Central->>Central: Update Global Tactical Map
+    Central->>DB: Store Tactical Event (Log)
     
     rect rgb(15, 23, 42)
         Note over Agent, Intel: Intelligence Query Path
@@ -65,7 +67,7 @@ sequenceDiagram
 ## 🚀 Key Components
 
 ### 1. Central Simulator (`App.jsx`)
-The hub of the operation. It aggregates real-time metrics, manages node states, and renders the situational map. It provides the "Ground Truth" for all tactical decisions.
+The hub of the operation. It aggregates real-time metrics, manages node states, and renders the situational map. It is the sole component responsible for **Tactical Persistence**—streaming telemetry directly to AstraDB for long-term analysis.
 
 ### 2. Tactical Advisor (`ChatBot.jsx`)
 A custom-built, premium React component using a 'frosted glass' tactical UI. Features:
@@ -74,10 +76,10 @@ A custom-built, premium React component using a 'frosted glass' tactical UI. Fea
 - **Dynamic Layout**: Toggle between a compact popup and a full-screen HUD view.
 
 ### 3. Intelligence Engine (Langflow)
-The "Intelligence Layer" of the system. It processes complex queries by cross-referencing live telemetry with historical event logs in AstraDB.
+The "Intelligence Layer" of the system. It processes complex queries by cross-referencing live telemetry with historical event logs retrieved from AstraDB.
 
 ### 4. AstraDB Persistence
-Stores all tactical events and anomaly logs. It enables the AI to "remember" previous failures and trends, providing the critical historical context required for accurate risk detection.
+The system's operational memory. It stores all tactical events and anomaly logs as they are streamed from the Central Simulator. It enables the AI to "remember" previous failures and trends, providing the critical historical context required for accurate risk detection.
 
 ## ⚙️ Getting Started
 
