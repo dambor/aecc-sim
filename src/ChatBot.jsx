@@ -47,9 +47,18 @@ const ChatBot = () => {
                 body: JSON.stringify(payload)
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
+            
+            // Comprehensive parsing for various Langflow response versions
             const aiText = data.outputs?.[0]?.outputs?.[0]?.results?.message?.text || 
                            data.outputs?.[0]?.outputs?.[0]?.messages?.[0]?.message ||
+                           data.outputs?.[0]?.outputs?.[0]?.messages?.[0]?.text ||
+                           data.outputs?.[0]?.outputs?.[0]?.results?.text?.data?.text ||
+                           data.outputs?.[0]?.outputs?.[0]?.results?.message?.data?.text ||
                            "Unable to parse tactical intelligence. Try again.";
 
             setMessages(prev => [...prev, { text: aiText, isAi: true }]);
